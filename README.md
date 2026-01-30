@@ -1,4 +1,4 @@
-# Robust Dog Breed Classifier with Unknown Detection
+# Dog Breed Classifier with Mixed Detection
 
 A deep learning system for dog breed classification that handles real-world photo conditions, detects out-of-distribution inputs, and provides calibrated confidence scores.
 
@@ -169,3 +169,4 @@ This project is for academic use only (APS360 course project).
 - Stanford Dogs Dataset
 - PyTorch and timm libraries
 - YOLOv5 by Ultralytics
+
