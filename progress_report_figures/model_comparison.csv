@@ -1,0 +1,3 @@
+Model,Parameters,Architecture,Pretrained,Training Strategy,Special Features
+Baseline (ResNet-50),25.6M,Single-stage,ImageNet,2-phase,Standard transfer learning
+Primary (EfficientNet-B3),12.2M,Multi-stage pipeline,ImageNet,3-phase progressive,Label smoothing + calibration

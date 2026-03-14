@@ -1,0 +1,130 @@
+# Configuration for Robust Dog Breed Classifier
+
+# Model Configuration
+model:
+  architecture: efficientnet_b3
+  num_classes: 93  # Combined dataset
+  dropout: [0.3, 0.2]
+  pretrained: true
+
+# Training Configuration
+training:
+  # Phase 1: Frozen backbone
+  phase1:
+    epochs: 10
+    learning_rate: 0.001
+    freeze_backbone: true
+  
+  # Phase 2: Fine-tune last blocks
+  phase2:
+    epochs: 20
+    learning_rate: 0.0001
+    unfreeze_blocks: 2
+  
+  # Phase 3: Full fine-tuning
+  phase3:
+    epochs: 10
+    learning_rate: 0.00001
+    freeze_backbone: false
+  
+  # General training settings
+  batch_size: 32
+  weight_decay: 0.01
+  label_smoothing: 0.1
+  early_stopping_patience: 5
+  
+  # Optimizer
+  optimizer: adamw
+  
+  # Scheduler
+  scheduler:
+    type: reduce_on_plateau
+    mode: max
+    factor: 0.5
+    patience: 3
+    min_lr: 0.000001
+
+# Data Configuration
+data:
+  image_size: 224
+  num_workers: 4
+  pin_memory: true
+  
+  # Data splits
+  train_split: 0.70
+  val_split: 0.15
+  test_split: 0.15
+  
+  # Dataset paths (to be updated)
+  data_dir: src\data\Dog Breed Classification
+  train_annotations: data/processed/train_combined.csv
+  val_annotations: data/processed/val_combined.csv
+  test_annotations: data/processed/test_combined.csv
+  
+  # Class imbalance handling
+  use_weighted_sampling: true
+  use_class_weights: false
+
+# Detection Configuration
+detection:
+  model: yolov5s
+  confidence_threshold: 0.5
+  uncertain_threshold: 0.3
+  use_detection: true
+
+# Calibration Configuration
+calibration:
+  method: temperature_scaling
+  max_iter: 50
+  learning_rate: 0.01
+
+# Unknown Detection Thresholds
+thresholds:
+  high_confidence: 0.7
+  medium_confidence: 0.4
+  low_confidence: 0.4
+  entropy_threshold: 2.5
+
+# Robustness Test Categories
+robustness:
+  categories:
+    - blur
+    - lighting
+    - partial
+    - multi_dog
+    - clean
+  test_dir: ./data/robustness_test
+
+# OOD Evaluation
+ood:
+  test_dir: ./data/ood_samples
+  categories:
+    - cats
+    - wolves
+    - objects
+
+# Paths
+paths:
+  checkpoint_dir: ./checkpoints
+  log_dir: ./logs
+  results_dir: ./results
+  visualization_dir: ./visualizations
+
+# Reproducibility
+seed: 42
+
+# Hardware
+device: cuda  # cuda or cpu
+mixed_precision: false  # Use automatic mixed precision
+
+# Logging
+logging:
+  log_interval: 50  # Log every N batches
+  save_interval: 5   # Save checkpoint every N epochs
+  
+# Evaluation
+evaluation:
+  top_k: 5
+  ece_bins: 15
+  save_predictions: true
+  save_confusion_matrix: true
