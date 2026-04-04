@@ -28,7 +28,7 @@ training:
     freeze_backbone: false
   
   # General training settings
-  batch_size: 32
+  batch_size: 64  # A100 has 40GB VRAM, can handle larger batches
   weight_decay: 0.01
   label_smoothing: 0.1
   early_stopping_patience: 5
@@ -47,7 +47,7 @@ training:
 # Data Configuration
 data:
   image_size: 224
-  num_workers: 4
+  num_workers: 8  # A100 Colab instances have more CPU cores
   pin_memory: true
   
   # Data splits
@@ -115,7 +115,7 @@ seed: 42
 
 # Hardware
 device: cuda  # cuda or cpu
-mixed_precision: false  # Use automatic mixed precision
+mixed_precision: true  # A100 supports bfloat16, big speedup
 
 # Logging
 logging:

@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, WeightedRandomSampler
+from torch.cuda.amp import GradScaler, autocast
 import yaml
 import argparse
 from tqdm import tqdm
@@ -33,6 +34,10 @@ def train_baseline(config_path: str, output_dir: str):
     
     # Device
     device = get_device()
+    use_amp = config.get('mixed_precision', False) and device == 'cuda'
+    scaler = GradScaler() if use_amp else None
+    if use_amp:
+        print("Mixed precision (AMP) enabled for A100")
     
     # Create output directory
     output_dir = Path(output_dir)
@@ -124,10 +129,18 @@ def train_baseline(config_path: str, output_dir: str):
             images, labels = images.to(device), labels.to(device)
             
             optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
+            if use_amp:
+                with autocast():
+                    outputs = model(images)
+                    loss = criterion(outputs, labels)
+                scaler.scale(loss).backward()
+                scaler.step(optimizer)
+                scaler.update()
+            else:
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
             
             train_loss.update(loss.item(), images.size(0))
             _, predicted = outputs.max(1)
@@ -190,10 +203,18 @@ def train_baseline(config_path: str, output_dir: str):
             images, labels = images.to(device), labels.to(device)
             
             optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
+            if use_amp:
+                with autocast():
+                    outputs = model(images)
+                    loss = criterion(outputs, labels)
+                scaler.scale(loss).backward()
+                scaler.step(optimizer)
+                scaler.update()
+            else:
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
             
             train_loss.update(loss.item(), images.size(0))
             _, predicted = outputs.max(1)

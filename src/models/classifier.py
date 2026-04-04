@@ -31,12 +31,24 @@ class BreedClassifier(nn.Module):
         self.num_classes = num_classes
         
         # Load EfficientNet-B3 backbone
-        self.backbone = timm.create_model(
-            'efficientnet_b3',
-            pretrained=pretrained,
-            num_classes=0,  # Remove classification head
-            global_pool=''  # Remove global pooling
-        )
+        try:
+            self.backbone = timm.create_model(
+                'efficientnet_b3',
+                pretrained=pretrained,
+                num_classes=0,  # Remove classification head
+                global_pool=''  # Remove global pooling
+            )
+            if pretrained:
+                print("Loaded pretrained EfficientNet-B3 weights")
+        except Exception as e:
+            print(f"Warning: Could not load pretrained weights ({e})")
+            print("Training from scratch (no pretrained weights)")
+            self.backbone = timm.create_model(
+                'efficientnet_b3',
+                pretrained=False,
+                num_classes=0,
+                global_pool=''
+            )
         
         # Get feature dimension
         with torch.no_grad():

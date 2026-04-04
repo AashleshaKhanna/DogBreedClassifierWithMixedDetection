@@ -6,6 +6,7 @@ Simple single-stage classifier for comparison with multi-stage pipeline.
 import torch
 import torch.nn as nn
 from torchvision import models
+from torchvision.models import ResNet50_Weights
 
 
 class BaselineResNet50(nn.Module):
@@ -26,8 +27,18 @@ class BaselineResNet50(nn.Module):
         
         self.num_classes = num_classes
         
-        # Load pretrained ResNet-50
-        self.resnet = models.resnet50(pretrained=pretrained)
+        # Load pretrained ResNet-50 (using new weights API)
+        if pretrained:
+            try:
+                weights = ResNet50_Weights.IMAGENET1K_V1
+                self.resnet = models.resnet50(weights=weights)
+                print("Loaded pretrained ResNet-50 weights")
+            except Exception as e:
+                print(f"Warning: Could not load pretrained weights ({e})")
+                print("Training from scratch (no pretrained weights)")
+                self.resnet = models.resnet50(weights=None)
+        else:
+            self.resnet = models.resnet50(weights=None)
         
         # Replace final layer
         num_features = self.resnet.fc.in_features
