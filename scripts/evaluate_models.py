@@ -165,6 +165,18 @@ def analyze_failures(results, class_names, top_n=10):
     print(f"High confidence errors (≥ {low_conf_threshold}): {len(misclassified_indices) - low_conf_errors}")
 
 
+class NumpyEncoder(json.JSONEncoder):
+    """Handle numpy types for JSON serialization."""
+    def default(self, obj):
+        if isinstance(obj, (np.integer,)):
+            return int(obj)
+        if isinstance(obj, (np.floating,)):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super().default(obj)
+
+
 def main():
     parser = argparse.ArgumentParser(description='Evaluate trained models')
     parser.add_argument('--config', type=str, default='configs/config.yaml')
@@ -230,7 +242,7 @@ def main():
             # Remove large arrays before saving
             save_results = {k: v for k, v in baseline_results.items() 
                            if k not in ['predictions', 'labels', 'probabilities']}
-            json.dump(save_results, f, indent=2)
+            json.dump(save_results, f, indent=2, cls=NumpyEncoder)
         
         # Plot confusion matrix
         plot_confusion_matrix(
@@ -265,7 +277,7 @@ def main():
         with open(output_dir / 'primary_test_results.json', 'w') as f:
             save_results = {k: v for k, v in primary_results.items()
                            if k not in ['predictions', 'labels', 'probabilities']}
-            json.dump(save_results, f, indent=2)
+            json.dump(save_results, f, indent=2, cls=NumpyEncoder)
         
         # Plot confusion matrix
         plot_confusion_matrix(
@@ -316,7 +328,7 @@ def main():
         }
         
         with open(output_dir / 'model_comparison.json', 'w') as f:
-            json.dump(comparison, f, indent=2)
+            json.dump(comparison, f, indent=2, cls=NumpyEncoder)
     
     print(f"\n{'='*60}")
     print(f"Evaluation complete! Results saved to: {output_dir}")
